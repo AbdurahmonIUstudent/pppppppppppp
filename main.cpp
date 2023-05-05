@@ -45,11 +45,13 @@ int main()
     v0 = v0 - a2/b2;
     k0 = k0 - a1/b1;
 
-    for(t = 0.0; t <= T; t += double(T)/N){
-        fprintf(pipe, "%f\t%f\n", k(t), v(t));
+    for(double t = 0.0; t <= T; t += double(T)/N){
+        fprintf(pipe, "%f\t%f\n", t, v(t));
     }
     fprintf(pipe, "%s\n", "e");
-
+    for(double t = 0.0; t <= T; t += double(T)/N){
+        fprintf(pipe, "%f\t%f\n", t, k(t));
+    }
     fprintf(pipe, "%s\n", "e");
     fprintf(pipe, "%s\n" ,"set terminal qt 1");
     fprintf(pipe, "%s\n", "plot '-' title 'relation' with lines");
