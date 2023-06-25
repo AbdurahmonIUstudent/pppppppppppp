@@ -1,0 +1,49 @@
+import time
+from datetime import datetime
+import telebot
+import threading
+
+bot = telebot.TeleBot('6082532817:AAGcjV5Uuf2Ar1bth3HOqUuu1xYxFYIFqrg')
+
+@bot.message_handler(commands=['start'])
+def start(message):
+    bot.send_message(message.chat.id, f'Hi! This is a reminder bot. Use /set_reminder to set a reminder.')
+
+def send_reminder(chat_id, message_text):
+    bot.send_message(chat_id, f"Reminder: {message_text}")
+
+@bot.message_handler(commands=['set_reminder'])
+def set_reminder(message):
+    # Extract the message and time from the command
+    words = message.text.split()
+    message_part = ' '.join(words[1:-2])
+    time_part = words[-2] + " " + words[-1]
+
+    if len(time_part) == 0 or len(message_part) == 0 or len(words[0]) == 0:
+        bot.send_message(message.chat.id, "Please provide the message and time for the reminder in the format: /set_reminder <message> <time>")
+        return
+
+    message_text = message_part
+    time_str = time_part
+
+    try:
+        # Parse the time string to a datetime object
+        time_obj = datetime.strptime(time_str, "%Y-%m-%d %H:%M:%S")
+
+        # Calculate the time difference in seconds
+        current_time = datetime.now()
+        time_diff = (time_obj - current_time).total_seconds()
+
+        if time_diff < 0:
+            bot.send_message(message.chat.id, "The specified time has already passed.")
+            return
+
+        bot.send_message(message.chat.id, f'Don\'t worry, I will notify you at {time_obj.strftime("%H:%M:%S")}')
+
+        # Schedule the reminder using threading
+        threading.Timer(time_diff, send_reminder, args=[message.chat.id, message_text]).start()
+
+    except ValueError:
+        bot.send_message(message.chat.id, "Invalid time format. Please provide the time in the format: YYYY-MM-DD HH:MM:SS")
+
+bot.polling(none_stop=True)
