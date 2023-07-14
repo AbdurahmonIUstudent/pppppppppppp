@@ -11,19 +11,23 @@ bot = telebot.TeleBot('6082532817:AAGcjV5Uuf2Ar1bth3HOqUuu1xYxFYIFqrg')
 # Global list to store active reminders
 active_reminders = []
 
+#It will recognize command /start
 @bot.message_handler(commands=['start'])
 def start(message):
     bot.send_message(message.chat.id, f'Hi! This is a reminder bot. Use /set_reminder to set a reminder or use /weather to see the weather or /active_messages to see your active reminders.')
 
+#It will send reminder
 def send_reminder(chat_id, message_text):
     bot.send_message(chat_id, f"Reminder: {message_text}")
 
+#This function recognizes /set_reminder command
 @bot.message_handler(commands=['set_reminder'])
 def set_reminder(message):
     chat_id = message.chat.id
     bot.send_message(chat_id, "Please enter your reminder message and the time, example of writing:\nHello 2023-07-11 11:18:00")
     bot.register_next_step_handler(message, process_reminder)
 
+# function process_reminder process message that was written during setting a reminder.
 def process_reminder(message):
     words = message.text.split()
     message_part = ' '.join(words[0: len(words)-2])
@@ -59,6 +63,7 @@ def process_reminder(message):
     except ValueError:
         bot.send_message(message.chat.id, "Invalid time format. Please provide the time in the format: YYYY-MM-DD HH:MM:SS")
 
+# We need it to recognize /active_messages command.
 @bot.message_handler(commands=['active_messages'])
 def show_active_messages(message):
     chat_id = message.chat.id
@@ -78,6 +83,7 @@ def show_active_messages(message):
     else:
         bot.send_message(chat_id, "No active messages.")
 
+# This function closes button when we click to "Close".
 def create_close_button():
     keyboard = InlineKeyboardMarkup()
     close_button = InlineKeyboardButton("Close", callback_data='close_active_messages')
@@ -92,11 +98,13 @@ def handle_button_click(call):
         current_time = datetime.now()
         active_reminders[:] = [reminder for reminder in active_reminders if reminder['time_obj'] > current_time]
 
+# We need it to recognize /weather command.
 @bot.message_handler(commands=['weather'])
 def start(message):
     bot.send_message(message.chat.id, "Please enter the city name:")
     bot.register_next_step_handler(message, get_city)
 
+#function get_city takes name of the city and sends useful information about the weather.
 def get_city(message):
     city_name = message.text
 
