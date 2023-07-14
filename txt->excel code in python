@@ -1,0 +1,538 @@
+from datetime import datetime
+import pandas as pd
+import xlsxwriter
+import openpyxl
+from openpyxl.utils import get_column_letter
+
+# Read the contents of the file
+with open('group.txt', 'r', encoding="utf-8") as file:
+    contents = file.read()
+
+# Split the contents into lines
+lines = contents.strip().split('\n')
+# Extract group name
+
+# Create empty lists to store the data
+lesson_schedule = []
+lesson_schedule2 = []
+lesson_schedule3 = []
+lesson_schedule4 = []
+lesson_schedule5 = []
+lesson_schedule6 = []
+for i in range(1,1000):
+    lesson_schedule.append([' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '])
+    lesson_schedule2.append([' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '])
+    lesson_schedule3.append([' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '])
+    lesson_schedule4.append([' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '])
+    lesson_schedule5.append([' ', ' ', ' ', ' ', ' ', ' '])
+    lesson_schedule6.append([' ', ' ', ' ', ' ', ' ', ' '])
+    #lesson_schedule4.append(['', '', '', '', '', '', '', '', '', '', ''])
+columns = ['Time', 'group_name', 'Location', 'Loc', 'Loc', 'Loc', 'Loc', 'Loc', 'Loc', 'Loc', 'Loc']  # Add the "Location" column
+columns2 = ['Time', 'group_name', 'Location', 'Loc', 'Loc', 'Loc', 'Loc', 'Loc', 'loc']  # Add the "Location" column
+columns3 = ['Time', 'group_name', 'Location', 'Loc', 'Loc', 'Loc', 'Loc', '']  # Add the "Location" column
+columns4 = ['Time', 'group_name', 'Location', 'Loc', 'Loc', 'Loc', 'Loc', '']  # Add the "Location" column
+columns5 = ['Time', 'group_name', 'Location', 'Loc', 'Loc', '']  # Add the "Location" column
+columns6 = ['Time', 'group_name', 'Location', 'Loc', 'Loc', '']  # Add the "Location" column
+
+lst = []
+lst_second = []
+lst_third = []
+lst_fourth = []
+lst_fifth = []
+lst_six = []
+
+lst2 = []
+list_days = []
+list_days2 = []
+list_days3 = []
+list_days4 = []
+list_days5 = []
+list_days6 = []
+
+cnt = 4
+# Iterate over the remaining lines
+day_before = 1
+group_before = 1
+i = 0
+level = 0
+ihelper = 0
+mx = 0
+mx_global = 0
+mx_global2 = 0
+mx_global3 = 0
+mx_global4 = 0
+mx_global5 = 0
+mx_global6 = 0
+
+
+k = 1
+bl = 0
+line_every_3 = []
+consequent = []
+index = 0
+for line in lines[0:]:
+    if(line[7] == 'B' and line[8] == 'S' and line[9] == '2'):
+        if bl == 0:
+            level = 0
+        bl = 1
+        day_before = 1
+    if (line[7] == 'B' and line[8] == 'S' and line[9] == '3'):
+        if bl == 1:
+            level = 0
+        bl = 2
+        day_before = 1
+    if (line[7] == 'B' and line[8] == 'S' and line[9] == '4'):
+        if bl == 2:
+            level = 0
+        bl = 3
+        day_before = 1
+    if (line[7] == 'M' and line[8] == 'S' and line[9] == '1'):
+        if bl == 3:
+            level = 0
+        bl = 4
+        day_before = 1
+    if (line[7] == 'M' and line[8] == 'S' and line[9] == '2'):
+        if bl == 4:
+            level = 0
+        bl = 5
+        day_before = 1
+    line = line.strip()
+    elements = line.split(', ')
+    if(line[0] == 'G' and line[1] == 'r'):
+        k = 1
+        i = 0
+        ihelper = 0
+        mx = 0
+        group = line.split(': ')[1]
+        level+=1
+        if bl == 0:
+            columns[level] = group
+        elif bl == 1:
+            columns2[level] = group
+        elif bl == 2:
+            columns3[level] = group
+        elif bl == 3:
+            columns4[level] = group
+        elif bl == 4:
+            columns5[level] = group
+        elif bl == 5:
+            columns6[level] = group
+        continue
+    else:
+        index+=10
+    subject = elements[0]
+    lesson_type = elements[1].replace('(', '').replace(')', '')
+    day = elements[2]
+    pair = elements[3]
+    auditorium = elements[4].split(': ')[1]
+
+    lecturer = elements[5].split(': ')[1]
+    if lecturer == ';':
+        lecturer = ''
+    time = 9 + 1.5 * (int(pair[0]) - 1)
+    hours = int(time)
+    minutes = int((time - hours) * 60)
+    time_string = datetime(1, 1, 1, hours, minutes).strftime("%H:%M")
+
+    if day_before != 1 and day_before != day and group_before == group:
+        ihelper = 21*k + k
+        knt = 0
+        for j in range(22*(k-1)+1, 22*(k-1)+22, 3):
+            line_every_3.append(j)
+            time = 9 + 1.5 * knt
+            hours = int(time)
+            minutes = int((time - hours) * 60 + knt*10) % 60
+            hours += int((time - hours) * 60 + knt*10) // 60
+            t = minutes
+            if knt > 1:
+                minutes = (int(t + 20)) % 60
+                hours += (int(t + 20) // 60)
+            t_string = datetime(1, 1, 1, hours, minutes).strftime("%H:%M")
+
+            time = 9 + 1.5 * (knt+1)
+            hours = int(time)
+            minutes = int((time - hours) * 60 + knt * 10) % 60
+            hours += int((time - hours) * 60 + knt * 10) // 60
+            t = minutes
+            if knt > 1:
+                minutes = (int(t + 20)) % 60
+                minutes = minutes % 60
+                hours += (int(t + 20) // 60)
+            t_string2 = datetime(1, 1, 1, hours, minutes).strftime("%H:%M")
+            if bl == 0:
+                lesson_schedule[j+1][0] = t_string + "-" + t_string2
+            elif bl == 1:
+                lesson_schedule2[j+1][0] = t_string + "-" + t_string2
+            elif bl == 2:
+                lesson_schedule3[j+1][0] = t_string + "-" + t_string2
+            elif bl == 3:
+                lesson_schedule4[j+1][0] = t_string + "-" + t_string2
+            elif bl == 4:
+                lesson_schedule5[j+1][0] = t_string + "-" + t_string2
+            elif bl == 5:
+                lesson_schedule6[j+1][0] = t_string + "-" + t_string2
+            knt+=1
+        if bl == 0:
+            lesson_schedule.append([' ', '', '', '', '', '', '', ''])  # Add an empty cell for the new column
+        elif bl == 1:
+            lesson_schedule2.append([' ', '', '', '', '', '', '', '', ''])  # Add an empty cell for the new column
+        elif bl == 2:
+            lesson_schedule3.append([' ', '', '', '', '', '', '', ''])  # Add an empty cell for the new column
+        elif bl == 3:
+            lesson_schedule4.append([' ', '', '', '', ''])  # Add an empty cell for the new column
+        elif bl == 4:
+            lesson_schedule5.append([' ', '', '', '', ''])  # Add an empty cell for the new column
+        elif bl == 5:
+            lesson_schedule6.append([' ', '', '', '', ''])  # Add an empty cell for the new column
+        lst2.append(ihelper)
+        if bl == 0:
+            list_days.append(day)
+        elif bl == 1:
+            list_days2.append(day)
+        elif bl == 2:
+            list_days3.append(day)
+        elif bl == 3:
+            list_days4.append(day)
+        elif bl == 4:
+            list_days5.append(day)
+        elif bl == 5:
+            list_days6.append(day)
+        k+=1
+        cnt += 1
+
+    if level == 1:
+        i = 3 * (int(pair[0]) - 1) + ihelper
+        mx = max(i+2, mx)
+        if bl == 0:
+            mx_global = max(i + 2, mx_global)
+        elif bl == 1:
+            mx_global2 = max(i + 2, mx_global2)
+        elif bl == 2:
+            mx_global3 = max(i + 2, mx_global3)
+        elif bl == 3:
+            mx_global4 = max(i + 2, mx_global4)
+        elif bl == 4:
+            mx_global5 = max(i + 2, mx_global5)
+        elif bl == 5:
+            mx_global6 = max(i + 2, mx_global6)
+        if bl == 0:
+            lesson_schedule[i + 1] = [' ', "" + subject, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '] # Add an empty cell for the new column
+
+            lesson_schedule[i+1 + 1] = [' ', "" + lecturer +" "+ elements[1], ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']  # Add an empty cell for the new column
+            lesson_schedule[i+2 + 1] = [' ', "" + auditorium, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']  # Add the value for the new column
+        elif bl == 1:
+            lesson_schedule2[i+1] = [' ', "" + subject, ' ', ' ', ' ', ' ', ' ', ' ', ' ']
+            lesson_schedule2[i + 1 + 1] = [' ', "" + lecturer + " " + elements[1], ' ', ' ', ' ', ' ', ' ', ' ', ' ']
+            lesson_schedule2[i + 2 + 1] = [' ', "" + auditorium, ' ', ' ', ' ', ' ', ' ', ' ', ' ']
+        elif bl == 2:
+            lesson_schedule3[i+1] = [' ', "" + subject, ' ', ' ', ' ', ' ', ' ', ' ']
+            lesson_schedule3[i + 1+1] = [' ', "" + lecturer + " " + elements[1], ' ', ' ', ' ', ' ', ' ', ' ']
+            lesson_schedule3[i + 2+1] = [' ', "" + auditorium, ' ' , ' ', ' ', ' ', ' ', ' ']
+        elif bl == 3:
+            lesson_schedule4[i] = [' ', "" + subject, ' ', ' ', ' ' , ' ', ' ', ' ']
+            lesson_schedule4[i + 1+1] = [' ', "" + lecturer + " " + elements[1], ' ', ' ', ' ', ' ', ' ', ' ']
+            lesson_schedule4[i + 2+1] = [' ', "" + auditorium, ' ', ' ', ' ', ' ', ' ', ' ']
+        elif bl == 4:
+            lesson_schedule5[i+1] = [' ', "" + subject, ' ', ' ', ' ' , ' ']
+            lesson_schedule5[i + 1+1] = [' ', "" + lecturer + " " + elements[1], ' ', ' ', ' ', ' ']
+            lesson_schedule5[i + 2+1] = [' ', "" + auditorium, ' ', ' ', ' ', ' ']
+        elif bl == 5:
+            lesson_schedule6[i+1] = [' ', "" + subject, ' ', ' ', ' ' , ' ']
+            lesson_schedule6[i + 1+1] = [' ', "" + lecturer + " " + elements[1], ' ', ' ', ' ', ' ']
+            lesson_schedule6[i + 2+1] = [' ', "" + auditorium, ' ', ' ', ' ', ' ']
+        if bl == 0:
+            lst.append(i+4)
+        elif bl == 1:
+            lst_second.append(i + 4)
+        elif bl == 2:
+            lst_third.append(i + 4)
+        elif bl == 3:
+            lst_fourth.append(i + 4)
+        elif bl == 4:
+            lst_fifth.append(i + 4)
+        elif bl == 5:
+            lst_six.append(i + 4)
+
+    else:
+        i = 3 * (int(pair[0]) - 1) + ihelper
+        if bl == 0:
+            lesson_schedule[i + 1][level] = "" + subject
+            lesson_schedule[i+1 + 1][level] = "" + lecturer +" "+ elements[1]
+            lesson_schedule[i+2 + 1][level] = "" + auditorium
+            lst.append(i + 4 + 1)
+        elif bl == 1:
+            lesson_schedule2[i+1][level] = "" + subject
+            lesson_schedule2[i + 1+1][level] = "" + lecturer + " " + elements[1]
+            lesson_schedule2[i + 2+1][level] = "" + auditorium
+            lst_second.append(i + 4+1)
+        elif bl == 2:
+            lesson_schedule3[i+1][level] = "" + subject
+            lesson_schedule3[i + 1+1][level] = "" + lecturer + " " + elements[1]
+            lesson_schedule3[i + 2+1][level] = "" + auditorium
+            lst_third.append(i + 4+1)
+        elif bl == 3:
+            lesson_schedule4[i+1][level] = "" + subject
+            lesson_schedule4[i + 1+1][level] = "" + lecturer + " " + elements[1]
+            lesson_schedule4[i + 2+1][level] = "" + auditorium
+            lst_fourth.append(i + 4+1)
+        elif bl == 4:
+            lesson_schedule5[i+1][level] = "" + subject
+            lesson_schedule5[i + 1+1][level] = "" + lecturer + " " + elements[1]
+            lesson_schedule5[i + 2+1][level] = "" + auditorium
+            lst_fifth.append(i + 4+1)
+        elif bl == 5:
+            lesson_schedule6[i+1][level] = "" + subject
+            lesson_schedule6[i + 1+1][level] = "" + lecturer + " " + elements[1]
+            lesson_schedule6[i + 2+1][level] = "" + auditorium
+            lst_six.append(i + 4+1)
+
+    day_before = day
+    group_before = group
+    #lst.append(cnt)
+    cnt += 3
+
+knt = 0
+for j in range(22 * (k - 1) + 1, 22 * (k - 1) + 22, 3):
+    time = 9 + 1.5 * knt
+    hours = int(time)
+    minutes = int((time - hours) * 60)
+    t_string = datetime(1, 1, 1, hours, minutes).strftime("%H:%M")
+    time = 9 + 1.5 * (knt+1)
+    hours = int(time)
+    minutes = int((time - hours) * 60)
+    t_string2 = datetime(1, 1, 1, hours, minutes).strftime("%H:%M")
+    lesson_schedule[j + 1][0] = t_string + "-" + t_string2 + " "
+    lesson_schedule2[j+1][0] = t_string + "-" + t_string2 + " "
+    lesson_schedule3[j+1][0] = t_string + "-" + t_string2 + " "
+    lesson_schedule4[j+1][0] = t_string + "-" + t_string2 + " "
+    lesson_schedule5[j+1][0] = t_string + "-" + t_string2 + " "
+    lesson_schedule6[j+1][0] = t_string + "-" + t_string2 + " "
+    knt+=1
+# Create a DataFrame from the lesson_schedule list
+df = pd.DataFrame(lesson_schedule, columns=columns)
+df2 = pd.DataFrame(lesson_schedule2, columns=columns2)
+df3 = pd.DataFrame(lesson_schedule3, columns=columns3)
+df4 = pd.DataFrame(lesson_schedule4, columns=columns4)
+df5 = pd.DataFrame(lesson_schedule5, columns=columns5)
+df6 = pd.DataFrame(lesson_schedule6, columns=columns6)
+
+# Create a new Excel file with the group name as the sheet name
+with pd.ExcelWriter('lesson_schedule.xlsx', engine='xlsxwriter') as writer:
+    df.to_excel(writer, sheet_name='first year', index=False)
+    df2.to_excel(writer, sheet_name='second year', index=False)
+    df3.to_excel(writer, sheet_name='third year', index=False)
+    df4.to_excel(writer, sheet_name='fourth year', index=False)
+    df5.to_excel(writer, sheet_name='Master 1-st year', index=False)
+    df6.to_excel(writer, sheet_name='Master 2-st year', index=False)
+    workbook = writer.book
+    worksheet = writer.sheets['first year']
+    worksheet2 = writer.sheets['second year']
+    worksheet3 = writer.sheets['third year']
+    worksheet4 = writer.sheets['fourth year']
+    worksheet5 = writer.sheets['Master 1-st year']
+    worksheet6 = writer.sheets['Master 2-st year']
+    # Increase cell size
+    center_alignment = workbook.add_format({'align': 'center', 'valign': 'vcenter'})
+
+    row_height = 20  # Desired row height (in points)
+    worksheet.set_default_row(row_height)
+    worksheet2.set_default_row(row_height)
+    worksheet3.set_default_row(row_height)
+    worksheet4.set_default_row(row_height)
+    worksheet5.set_default_row(row_height)
+    worksheet6.set_default_row(row_height)
+
+    # Add black horizontal lines to the specified rows
+    border_format = workbook.add_format({'bottom': 1, 'bottom_color': 'black'})
+
+    for line_num in lst2:
+        line_num+=1
+        line_range = 'A' + str(line_num) + ':' + chr(ord('A') + len(columns) - 1) + str(line_num)
+        worksheet.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+
+    for line_num in line_every_3:
+        line_num+=1
+        line_range = 'A' + str(line_num) + ':' + chr(ord('A') + len(columns) - 1) + str(line_num)
+        worksheet.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+        worksheet2.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+        worksheet3.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+        worksheet4.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+        worksheet5.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+        worksheet6.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+    for i in range(90, 111, 3):
+        line_range = 'A' + str(i) + ':' + chr(ord('A') + len(columns) - 1) + str(i)
+        worksheet.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+        worksheet2.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+        worksheet3.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+        worksheet4.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+        worksheet5.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+        worksheet6.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+    # Merge cells horizontally
+    merge_format = workbook.add_format({'align': 'center', 'valign': 'vcenter'})
+
+    l1 = []
+    prev = 0
+    for i in range(0, 130):
+        cnt = 0
+        b = 0
+        j = 1
+        while j < len(lesson_schedule[i]) - 1:
+            if cnt > 0 and prev != lesson_schedule[i][j] :
+                b = 1
+                break
+            else:
+                prev = lesson_schedule[i][j]
+                cnt+=1
+            j+=1
+        if b == 0:
+            l1.append(i)
+
+    # Merge the five cells
+    for i in l1:
+        if i + 1 == 23 or i + 1 == 45 or i + 1 == 67 or i + 1 == 89 or i + 1 == 112 or i+1 == 1:
+            continue
+        worksheet.merge_range(i+1, 1, i+1, len(lesson_schedule[0]), lesson_schedule[i][1], merge_format)
+
+    l1 = []
+    prev = 0
+    for i in range(0, 130):
+        cnt = 0
+        b = 0
+        j = 1
+        while j < len(lesson_schedule2[i]) - 1:
+            if cnt > 0 and prev != lesson_schedule2[i][j]:
+                b = 1
+                break
+            else:
+                prev = lesson_schedule2[i][j]
+                cnt += 1
+            j += 1
+        if b == 0:
+            l1.append(i)
+
+    # Merge the five cells
+    for i in l1:
+        if i + 1 == 23 or i + 1 == 45 or i + 1 == 67 or i + 1 == 89 or i + 1 == 112 or i + 1 == 1:
+            continue
+        worksheet2.merge_range(i + 1, 1, i + 1, len(lesson_schedule2[0]), lesson_schedule2[i][1], merge_format)
+
+    l1 = []
+    prev = 0
+    for i in range(0, 130):
+        cnt = 0
+        b = 0
+        j = 1
+        while j < len(lesson_schedule3[i]) - 1:
+            if cnt > 0 and prev != lesson_schedule3[i][j]:
+                b = 1
+                break
+            else:
+                prev = lesson_schedule3[i][j]
+                cnt += 1
+            j += 1
+        if b == 0:
+            l1.append(i)
+    # Merge the five cells
+    for i in l1:
+        if i + 1 == 23 or i + 1 == 45 or i + 1 == 67 or i + 1 == 89 or i + 1 == 112 or i + 1 == 1:
+            continue
+        worksheet3.merge_range(i + 1, 1, i + 1, len(lesson_schedule3[0]), lesson_schedule3[i][1], merge_format)
+    line_range = 'A' + str(1) + ':' + chr(ord('A') + len(columns) - 1) + str(1)
+    worksheet.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+    worksheet.merge_range(1, 1, 1, len(lesson_schedule[0]), 'Monday', merge_format)
+    worksheet2.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+    worksheet2.merge_range(1, 1, 1, 8, 'Monday', merge_format)
+    worksheet3.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+    worksheet3.merge_range(1, 1, 1, 6 , 'Monday', merge_format)
+    worksheet4.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+    worksheet4.merge_range(1, 1, 1, 6, 'Monday', merge_format)
+    worksheet5.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+    worksheet5.merge_range(1, 1, 1, 5, 'Monday', merge_format)
+    worksheet6.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+    worksheet6.merge_range(1, 1, 1, 5, 'Monday', merge_format)
+
+
+    p = 0
+    for i in range(23, mx_global, 22):
+
+        line_range = 'A' + str(i) + ':' + chr(ord('A') + len(columns) - 1) + str(i)
+        worksheet.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+        worksheet.merge_range(i, 1, i, len(lesson_schedule[0]), list_days[p], merge_format)
+        p+=1
+    p = 0
+    for i in range(23, mx_global2, 22):
+        line_range = 'A' + str(i) + ':' + chr(ord('A') + len(columns) - 1) + str(i)
+        worksheet2.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+        worksheet2.merge_range(i, 1, i, len(lesson_schedule2[0]), list_days2[p], merge_format)
+        p += 1
+    p = 0
+    for i in range(23, mx_global3, 22):
+        line_range = 'A' + str(i) + ':' + chr(ord('A') + len(columns) - 1) + str(i)
+        worksheet3.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+        worksheet3.merge_range(i, 1, i, len(lesson_schedule3[0]), list_days3[p], merge_format)
+        p += 1
+    p = 0
+    for i in range(23, mx_global4, 22):
+        line_range = 'A' + str(i) + ':' + chr(ord('A') + len(columns) - 1) + str(i)
+        worksheet4.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+        worksheet4.merge_range(i, 1, i, len(lesson_schedule4[0]), list_days4[p], merge_format)
+        p += 1
+    p = 0
+    for i in range(23, mx_global5, 22):
+        line_range = 'A' + str(i) + ':' + chr(ord('A') + len(columns) - 1) + str(i)
+        worksheet5.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+        worksheet5.merge_range(i, 1, i, len(lesson_schedule5[0]), list_days5[p], merge_format)
+        p += 1
+    p = 0
+    for i in range(23, mx_global6, 22):
+        line_range = 'A' + str(i) + ':' + chr(ord('A') + len(columns) - 1) + str(i)
+        worksheet6.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+        worksheet6.merge_range(i, 1, i, len(lesson_schedule6[0]), list_days6[p], merge_format)
+        p += 1
+    c = 0
+    for line_num in lst2:
+        merge_range_start = line_num
+       # worksheet.merge_range('B' + str(merge_range_start) + ':C' + str(merge_range_start), list_days[c] , merge_format)
+        merge_range_start = line_num + 1
+        c += 1
+    for i in range(mx_global, 112, 3):
+        line_range = 'A' + str(i) + ':' + chr(ord('A') + len(columns) - 1) + str(i)
+        worksheet.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+    for i in range(mx_global2, 112, 3):
+        line_range = 'A' + str(i) + ':' + chr(ord('A') + len(columns) - 1) + str(i)
+        worksheet2.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+    if mx_global3 != 0:
+        for i in range(mx_global3, 112, 3):
+            line_range = 'A' + str(i) + ':' + chr(ord('A') + len(columns) - 1) + str(i)
+            worksheet3.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+    if mx_global4 != 0:
+        for i in range(mx_global4, 112, 3):
+            line_range = 'A' + str(i) + ':' + chr(ord('A') + len(columns) - 1) + str(i)
+            worksheet4.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+    if mx_global5 != 0:
+        for i in range(mx_global5, 112, 3):
+            line_range = 'A' + str(i) + ':' + chr(ord('A') + len(columns) - 1) + str(i)
+            worksheet5.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+    if mx_global6 != 0:
+        for i in range(mx_global6, 112, 3):
+            line_range = 'A' + str(i) + ':' + chr(ord('A') + len(columns) - 1) + str(i)
+            worksheet6.conditional_format(line_range, {'type': 'no_errors', 'format': border_format})
+    start_row = 1
+    end_row = 10
+    start_column = 1
+    end_column = 5
+
+    # Clear values outside the range
+
+    worksheet.set_column(0, 50, 30, center_alignment)  # Increase width of Subject and Day columns
+    worksheet.set_column(0, 0, 10, center_alignment)  # Increase width of Time column
+    worksheet2.set_column(0, 50, 30, center_alignment)  # Increase width of Subject and Day columns
+    worksheet2.set_column(0, 0, 10, center_alignment)  # Increase width of Time column
+    worksheet3.set_column(0, 50, 30, center_alignment)  # Increase width of Subject and Day columns
+    worksheet3.set_column(0, 0, 10, center_alignment)
+    worksheet4.set_column(0, 50, 30, center_alignment)  # Increase width of Subject and Day columns
+    worksheet4.set_column(0, 0, 10, center_alignment)
+    worksheet5.set_column(0, 50, 30, center_alignment)  # Increase width of Subject and Day columns
+    worksheet5.set_column(0, 0, 10, center_alignment)
+    worksheet6.set_column(0, 50, 30, center_alignment)  # Increase width of Subject and Day columns
+    worksheet6.set_column(0, 0, 10, center_alignment)
